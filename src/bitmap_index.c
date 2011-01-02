@@ -1,3 +1,4 @@
+
 #define _GNU_SOURCE
 
 #include <malloc.h>
@@ -8,7 +9,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-#include "bit_helpers.h"
+#include "../include/bit_helpers.h"
 
 #define INITIAL_LENGTH 16
 #define ALINGMENT 16
@@ -21,6 +22,10 @@ typedef unsigned long long int Int;
 
 #define try_io(s) if ((void*)(s) == (void*)-1) { fprintf(stderr, "%s:%d (%s): ", __FILE__, __LINE__, __func__); perror("IO Error"); exit(EXIT_FAILURE); }
 
+struct BitMapStructure;
+typedef struct BitMapStructure* BitMap;
+typedef BitMap(*BitMapMethod)(BitMap);
+
 struct BitMapStructure {
     BitPart* parts;
     Int bit_length;
@@ -29,9 +34,9 @@ struct BitMapStructure {
     char* name;
     int persisted;
     int fd;
-};
 
-typedef struct BitMapStructure* BitMap;
+    BitMapMethod clone;
+};
 
 Int part_length(Int bit_length) {
     float new_part_length;
@@ -44,6 +49,7 @@ Int part_length(Int bit_length) {
 
 BitMap attach_to_file(BitMap self);
 void free_bitmap(BitMap self);
+BitMap clone(BitMap self);
 
 BitMap initialize_bitmap(Int bit_length, char* name) {
     BitMap self;
@@ -60,17 +66,19 @@ BitMap initialize_bitmap(Int bit_length, char* name) {
         self->parts = malloc(new_part_length * sizeof (BitPart));
     }
 
+    self->clone = &clone;
+
     return (self);
 };
 
-BitMap clone(BitMap right) {
-    BitMap self = initialize_bitmap(right->bit_length, NULL);
+BitMap clone(BitMap self) {
+    BitMap cloned = initialize_bitmap(self->bit_length, NULL);
 
-    for (Int i = 0; i < self->part_length; i++) {
-        self->parts[i] = right->parts[i];
+    for (Int i = 0; i < cloned->part_length; i++) {
+        cloned->parts[i] = self->parts[i];
     }
 
-    return (self);
+    return (cloned);
 };
 
 BitMap resize_bitmap(BitMap self, Int new_bit_length) {

@@ -1,41 +1,13 @@
-/* 
- * File:   main.c
- * Author: swistak
- *
- * Created on 30 grudzień 2010, 21:07
- */
+#define _GNU_SOURCE
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <postgresql/libpq-fe.h>
-#include <time.h>
 #include <malloc.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
 
-#define TREE_SIZE 2
-
-typedef struct {
-    struct Node* children;
-    int dimension;
-    int value;
-} Node;
-
-Node* alloc_node() {
-    Node* new_node = malloc(sizeof (Node));
-    new_node->children = malloc(TREE_SIZE * sizeof (Node*));
-
-    return (new_node);
-}
-
-void build_tree() {
-    int dimension;
-    dimension = (dimension + 1) % TREE_SIZE;
-
-    
-}
-
-void process_result(PGresult* result) {
-
-}
 
 typedef void (*ResultHandler)(PGresult*);
 
@@ -88,12 +60,8 @@ void print_result(PGresult* result) {
     PQprint(stdout, result, &pqp);
 };
 
-int main(int argc, char** argv) {
+void establish_connection() {
     PGconn *connection = PQconnectdb("host=localhost dbname=event_testing user=keke");
-
-    if (argv[0] == "-h") {
-        printf("usage: PGDBNAME=db_name PGUSER=username PGPASSWORD=pass PGHOST=localhost ./skarbnik \n");
-    }
 
     if (PQstatus(connection) == CONNECTION_OK) {
         printf("Connected...\n");
@@ -103,6 +71,4 @@ int main(int argc, char** argv) {
     }
 
     PQfinish(connection);
-    return (EXIT_SUCCESS);
 }
-
