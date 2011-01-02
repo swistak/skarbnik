@@ -1,4 +1,3 @@
-
 #define _GNU_SOURCE
 
 #include <malloc.h>
@@ -12,25 +11,17 @@
 #include "../include/bitmap_index.h"
 #include "../include/bit_helpers.h"
 
-int part_length(int bit_length) {
+/*
+ * Calculates length of parts of BitMapPart that are needed to allocate given
+ * length in bits.
+ */
+int bm_part_length(int bit_length) {
     float new_part_length;
     new_part_length = floor((bit_length - 1) / sizeof (BitMapPart) / 8) + 1;
     new_part_length = pow(2, ceil(log2(new_part_length)));
     if (new_part_length < 2) new_part_length = 2;
 
     return ((int) new_part_length);
-}
-
-char* i2b(int number) {
-    int width = sizeof (int) * 8;
-    char* s = malloc(width + 1);
-
-    s[width] = 0x00; // terminate string
-    for (int i = 0; i < width; i++) {
-        s[i] = ((1 << i) & number) > 0 ? '1' : '0';
-    }
-
-    return s;
 }
 
 /*
@@ -49,7 +40,7 @@ char* i2b(int number) {
  */
 BitMap bm_initialize(int bit_length, char* name, int persist) {
     BitMap self;
-    int new_part_length = part_length(bit_length);
+    int new_part_length = bm_part_length(bit_length);
 
     self = malloc(sizeof (struct BitMapStructure));
     self->part_length = new_part_length;
@@ -75,7 +66,7 @@ BitMap bm_initialize(int bit_length, char* name, int persist) {
  * 
  */
 BitMap bm_resize(BitMap self, int new_bit_length) {
-    int new_part_length = part_length(new_bit_length);
+    int new_part_length = bm_part_length(new_bit_length);
     int new_byte_size = new_part_length * sizeof (BitMapPart);
 
     if (new_part_length != self->part_length) {
@@ -221,13 +212,25 @@ BitMap bm_not(BitMap self, BitMap right) {
     return (self);
 };
 
+char* bm_i2b(int number) {
+    int width = sizeof (int) * 8;
+    char* s = malloc(width + 1);
+
+    s[width] = 0x00; // terminate string
+    for (int i = 0; i < width; i++) {
+        s[i] = ((1 << i) & number) > 0 ? '1' : '0';
+    }
+
+    return s;
+}
+
 /*
  * Prints BitMap to stdout.
  */
 BitMap bm_print(BitMap self) {
     printf("%-10s - Part length: %d  Bit Length: %d\n", self->name, self->part_length, self->bit_length);
     for (int i = 0; i < self->part_length; i += 2) {
-        printf("%d-%d: %s %s \n", i, i + 1, i2b(self->parts[i]), i2b(self->parts[i + 1]));
+        printf("%d-%d: %s %s \n", i, i + 1, bm_i2b(self->parts[i]), bm_i2b(self->parts[i + 1]));
     }
     return (self);
 }
