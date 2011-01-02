@@ -1,0 +1,4 @@
+*.idx
+a.out
+dist
+build
