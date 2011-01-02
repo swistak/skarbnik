@@ -31,9 +31,9 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/postgresql_adapter.o \
 	${OBJECTDIR}/src/main.o \
-	${OBJECTDIR}/src/bitmap_index.o
+	${OBJECTDIR}/src/bitmap_index.o \
+	${OBJECTDIR}/src/postgresql_adapter.o
 
 # C Compiler Flags
 CFLAGS=
@@ -59,11 +59,6 @@ dist/Release/GNU-Linux-x86/skarbnik: ${OBJECTFILES}
 	${MKDIR} -p dist/Release/GNU-Linux-x86
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/skarbnik ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-${OBJECTDIR}/postgresql_adapter.o: nbproject/Makefile-${CND_CONF}.mk postgresql_adapter.c 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/postgresql_adapter.o postgresql_adapter.c
-
 ${OBJECTDIR}/src/main.o: nbproject/Makefile-${CND_CONF}.mk src/main.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
@@ -73,6 +68,11 @@ ${OBJECTDIR}/src/bitmap_index.o: nbproject/Makefile-${CND_CONF}.mk src/bitmap_in
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} $@.d
 	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/bitmap_index.o src/bitmap_index.c
+
+${OBJECTDIR}/src/postgresql_adapter.o: nbproject/Makefile-${CND_CONF}.mk src/postgresql_adapter.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	${RM} $@.d
+	$(COMPILE.c) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/src/postgresql_adapter.o src/postgresql_adapter.c
 
 # Subprojects
 .build-subprojects:

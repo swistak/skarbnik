@@ -6,17 +6,13 @@
 
 PGconn* connection;
 
-DataPart fetch_data_part() {
+DataPart fetch_data_part(char* query) {
     PGresult *raw_result;
     DataPart result;
 
-    char* command = "SELECT ;";
-
-    printf("%s\n", command);
-
     time_t tstart, tend;
     tstart = time(0);
-    raw_result = PQexec(connection, command);
+    raw_result = PQexec(connection, query);
     tend = time(0);
 
     result->run_time = difftime(tend, tstart);
@@ -32,24 +28,33 @@ DataPart fetch_data_part() {
         case PGRES_COMMAND_OK:
             break;
         case PGRES_TUPLES_OK:
-            result->columns = malloc(result->cols * sizeof (char*));
-            for (int i = 0; i < result->cols; i++) {
-                result->columns[i] = PQfname(raw_result, i);
-            }
             break;
         default:
             printf("error message: %s\n", PQresultErrorMessage(raw_result));
+            result = NULL;
             break;
     }
 
     return (result);
 }
 
-void free_data_part(DataPart result) {
-    for (int i = 0; i < result->cols; i++) {
-        free(result->columns[i]);
+char** get_columns(DataPart part) {
+    char** result;
+    result = malloc(part->cols * sizeof (char*));
+    for (int i = 0; i < part->cols; i++) {
+        result[i] = PQfname(part->raw, i);
     }
-    free(result->columns);
+
+    return(result);
+}
+
+void free_data_part(DataPart result) {
+    if (result->columns) {
+        for (int i = 0; i < result->cols; i++) {
+            free(result->columns[i]);
+        }
+        free(result->columns);
+    }
     PQclear((PGresult*) (result->raw));
     free(result);
 }

@@ -11,6 +11,8 @@
 #include "../include/bitmap_index.h"
 #include "../include/bit_helpers.h"
 
+BitMap bm_attach_to_file(BitMap self);
+
 /*
  * Calculates length of parts of BitMapPart that are needed to allocate given
  * length in bits.
@@ -104,7 +106,7 @@ BitMap bm_attach_to_file(BitMap self) {
     struct stat buffer;
     int fsize = self->part_length * sizeof (BitMapPart);
     sprintf(fname, "indices/%s.idx", self->name);
-
+    
     if (self->parts) free(self->parts);
 
     try_io(self->fd = open(fname, O_RDWR | O_CREAT | O_TRUNC, 0600));
@@ -235,17 +237,19 @@ BitMap bm_print(BitMap self) {
     return (self);
 }
 
+#ifdef TESTING
+
 int main(int argc, char** argv) {
     int i;
 
     prepare_bit_table(sizeof (BitMapPart) * 8);
 
-    BitMap left = bm_initialize(16 * 8, "left", 0);
-    BitMap right = bm_initialize(16 * 8, "right", 0);
-    BitMap or = bm_initialize(16 * 8, "OR", 1); 
-    BitMap and = bm_initialize(16 * 8, "AND", 1); 
-    BitMap xor = bm_initialize(16 * 8, "XOR", 1); 
-    BitMap not = bm_initialize(16 * 8, "NOT", 1); 
+    BitMap left = bm_initialize(16 * 8, "left", 1);
+    BitMap right = bm_initialize(16 * 8, "right", 1);
+    BitMap or = bm_initialize(16 * 8, "OR", 0);
+    BitMap and = bm_initialize(16 * 8, "AND", 0);
+    BitMap xor = bm_initialize(16 * 8, "XOR", 0);
+    BitMap not = bm_initialize(16 * 8, "NOT", 0);
 
     BitMap large = bm_initialize(16 * 8, "large", 1);
     bm_resize(large, 1024 * 1024 * 8);
@@ -282,3 +286,5 @@ int main(int argc, char** argv) {
     bm_free(or);
     bm_free(and);
 }
+
+#endif

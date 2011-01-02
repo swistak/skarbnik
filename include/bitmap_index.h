@@ -39,7 +39,6 @@ struct BitMapStructure {
  */
 BitMap bm_initialize(int bit_length, char* name, int persist);
 BitMap bm_resize(BitMap self, int new_bit_length);
-BitMap bm_attach_to_file(BitMap self);
 void bm_free(BitMap self);
 
 /*
