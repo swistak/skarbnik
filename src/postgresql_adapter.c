@@ -6,60 +6,52 @@
 
 PGconn* connection;
 
-DataPart fetch_data_part(char* query) {
+int ca_execute(char* query) {
     PGresult *raw_result;
-    DataPart result;
-
-    time_t tstart, tend;
-    tstart = time(0);
     raw_result = PQexec(connection, query);
-    tend = time(0);
 
-    result->run_time = difftime(tend, tstart);
-    result->raw = raw_result;
-    result->status = (
+    int status = (
             PGRES_COMMAND_OK == PQresultStatus(raw_result) ||
             PGRES_TUPLES_OK == PQresultStatus(raw_result)
             ) ? 1 : 0;
-    result->rows = PQntuples(raw_result);
-    result->cols = PQnfields(raw_result);
 
-    switch (PQresultStatus(raw_result)) {
-        case PGRES_COMMAND_OK:
-            break;
-        case PGRES_TUPLES_OK:
-            break;
-        default:
-            printf("error message: %s\n", PQresultErrorMessage(raw_result));
-            result = NULL;
-            break;
-    }
+    PQclear(raw_result);
+    return (status);
+}
+
+DataPart ca_fetch_data_part(char* query) {
+    DataPart result = malloc(sizeof (struct DataPartStructure));
+
+    int resultFormat = 1;
+    
+    time_t tstart, tend;
+    tstart = time(0);
+    /* Execute a parameterized query. */
+    PGresult *res = PQparamExec(
+            connection,
+            NULL,
+            query,
+            resultFormat
+            );
+
+    tend = time(0);
+
+    result->raw = (void*) (res);
+
+    result->run_time = difftime(tend, tstart);
+    result->status = res ? 1 : 0;
+    result->rows = PQntuples(res);
+    result->cols = PQnfields(res);
 
     return (result);
 }
 
-char** get_columns(DataPart part) {
-    char** result;
-    result = malloc(part->cols * sizeof (char*));
-    for (int i = 0; i < part->cols; i++) {
-        result[i] = PQfname(part->raw, i);
-    }
-
-    return(result);
-}
-
-void free_data_part(DataPart result) {
-    if (result->columns) {
-        for (int i = 0; i < result->cols; i++) {
-            free(result->columns[i]);
-        }
-        free(result->columns);
-    }
-    PQclear((PGresult*) (result->raw));
+void ca_free_data_part(DataPart result) {
+    PQclear((PGresult*) result->raw);
     free(result);
 }
 
-void connect() {
+void ca_connect() {
     connection = PQconnectdb("");
 
     if (PQstatus(connection) != CONNECTION_OK) {
@@ -73,7 +65,17 @@ void connect() {
     }
 }
 
-void disconnect() {
+char** ca_get_column_names(DataPart part) {
+    char** result;
+    result = malloc(part->cols * sizeof (char*));
+    for (int i = 0; i < part->cols; i++) {
+        result[i] = PQfname(part->raw, i);
+    }
+
+    return (result);
+}
+
+void ca_disconnect() {
     PQfinish(connection);
 }
 

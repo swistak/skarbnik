@@ -22,17 +22,18 @@ extern "C" {
         int status;
         float run_time;
         void* raw;
-
-        char** columns;
     };
 
     typedef struct DataPartStructure* DataPart;
 
-    void connect();
-    void disconnect();
+    void ca_connect();
+    void ca_disconnect();
 
+    int ca_execute(char* query);
+    DataPart ca_fetch_data_part(char* query, char* type_information, ...);
+    void ca_free_data_part(DataPart result);
 
-
+    //char** ca_get_column_names(DataPart part);
 #ifdef	__cplusplus
 }
 #endif
